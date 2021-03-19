@@ -50,10 +50,13 @@ END_MESSAGE_MAP()
 
 double A, B, C, D;
 double alpha, beta, gamma;
-double n;
+int n;// кол-во узлов
+int N;
+double step;
+double deltaY[200];//нужные дельты
 double RX1 = 50, RY1 = 100, RX2 = 650, RY2 = 600;
 CRect rect(RX1, RY1, RX2, RY2);
-
+double DeltasArray[200][200];
 
 CLabaInterpolaziyaGaussDlg::CLabaInterpolaziyaGaussDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(IDD_LABAINTERPOLAZIYAGAUSS_DIALOG, pParent)
@@ -89,6 +92,8 @@ BEGIN_MESSAGE_MAP(CLabaInterpolaziyaGaussDlg, CDialog)
 	ON_EN_CHANGE(IDC_GAMMA, &CLabaInterpolaziyaGaussDlg::OnChangeGamma)
 	ON_EN_UPDATE(IDC_N, &CLabaInterpolaziyaGaussDlg::OnUpdateN)
 	ON_BN_CLICKED(IDC_CHECKFUNC, &CLabaInterpolaziyaGaussDlg::OnClickedCheckfunc)
+	ON_BN_CLICKED(IDC_CREATE, &CLabaInterpolaziyaGaussDlg::OnBnClickedCreate)
+	ON_BN_CLICKED(IDOK, &CLabaInterpolaziyaGaussDlg::OnBnClickedOk)
 END_MESSAGE_MAP()
 
 
@@ -124,14 +129,15 @@ BOOL CLabaInterpolaziyaGaussDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Мелкий значок
 
 	// TODO: добавьте дополнительную инициализацию
-	m_ControlA.SetWindowTextW(L"1.5");
-	m_ControlB.SetWindowTextW(L"1.7");
+
+	m_ControlA.SetWindowTextW(L"-1");
+	m_ControlB.SetWindowTextW(L"7");
 	m_ControlC.SetWindowTextW(L"-2");
-	m_ControlD.SetWindowTextW(L"2");
+	m_ControlD.SetWindowTextW(L"3");
 	m_Alpha.SetWindowTextW(L"1");
 	m_Beta.SetWindowTextW(L"1");
 	m_Gamma.SetWindowTextW(L"1");
-	m_N.SetWindowTextW(L"36");
+	m_N.SetWindowTextW(L"0");
 
 	return TRUE;  // возврат значения TRUE, если фокус не передан элементу управления
 }
@@ -155,28 +161,71 @@ void CLabaInterpolaziyaGaussDlg::OnSysCommand(UINT nID, LPARAM lParam)
 
 
 double Function(double x) {
+	//return sin(x);
 	return alpha*sin(tan(beta*x))*sin(gamma*x);
+}
+
+double Polinom(double x)
+{
+	double paperY= deltaY[1];
+	double QandFact[200];
+	QandFact[0] = 1;
+	for (int i = 1; i < N+1; i++)
+	{
+		if (i % 2 != 0)
+			QandFact[i] = (((x - DeltasArray[0][N / 2]) / step + i/2) * QandFact[i - 1])/i;
+		else
+			QandFact[i] = (((x - DeltasArray[0][N / 2]) / step - i/2) * QandFact[i - 1])/i;
+	}
+	for (int i = 1; i < N; i++)
+	{
+		paperY += deltaY[i+1] * QandFact[i];
+	}
+	return paperY;
 }
 
 double Perer(double x) {
 	return RY2 - ((RY2 - RY1) * ((Function(x) - C) / (D - C)));
 }
 
+void fillingArray(){
+	N = 2 * n + 1;
+	if (N <= 1)
+		step = 0;
+	else
+		step = (B - A) / (N-1);
+	for (int i = 0; i < N;i++)
+	{
+		DeltasArray[0][i] = A + step * i;
+		DeltasArray[1][i] = Function(DeltasArray[0][i]);
+	}
+
+	for (int i = 2; i < N+1; i++)
+		for (int j = 0; j < N - i+1; j++)
+			DeltasArray[i][j] = DeltasArray[i - 1][j + 1] - DeltasArray[i - 1][j];
+
+	for (int i = 1; i < N+1; i++)
+		deltaY[i] = DeltasArray[i][(N - i+1)/2];
+}
+
 void CLabaInterpolaziyaGaussDlg::OnPaint()
 {
+	fillingArray();
 	double x0 = RX1,
 		   y0 = Perer(A);
 
 	CPoint pStart(x0, y0), pCur;
 	CPaintDC ClientDC(this);
 	CPen m_NormalPen;
-	m_NormalPen.CreatePen(PS_DEFAULT, 1, RGB(0, 0, 0));
-	ClientDC.SelectObject(&m_NormalPen);
+	/*m_NormalPen.CreatePen(PS_DEFAULT, 1, RGB(0, 0, 0));
+	ClientDC.SelectObject(&m_NormalPen);*/
 
 	ClientDC.Rectangle(RX1, RY1, RX2, RY2);
-	
+	m_NormalPen.CreatePen(PS_DEFAULT, 1, RGB(255, 0, 0));
+	ClientDC.SelectObject(&m_NormalPen);
 	ClientDC.IntersectClipRect(RX1, RY1, RX2, RY2);
 	ClientDC.MoveTo(pStart);
+	
 	if (m_Func) {
 		for (double x = A; x <= B; x += (B - A) / (RX2 - RX1) * 0.1)
 		{
@@ -185,6 +234,21 @@ void CLabaInterpolaziyaGaussDlg::OnPaint()
 			ClientDC.LineTo(pCur);
 		}
 	}
+
+	m_NormalPen.DeleteObject();
+	m_NormalPen.CreatePen(PS_DEFAULT, 1, RGB(0, 255, 0));
+	ClientDC.SelectObject(&m_NormalPen);
+	pStart.y= RY2 - ((RY2 - RY1) * ((Polinom(A) - C) / (D - C)));
+	ClientDC.MoveTo(pStart);
+	for (double x = A; x <= B; x += (B - A) / (RX2 - RX1) * 0.1)
+	{
+		pCur.x = (RX1 + ((RX2 - RX1) * ((x - A) / (B - A))));
+
+		pCur.y = RY2 - ((RY2 - RY1) * ((Polinom(x) - C) / (D - C)));
+		ClientDC.LineTo(pCur);
+	}
+
+
 	if (IsIconic())
 	{
 		CPaintDC dc(this); // контекст устройства для рисования
@@ -222,9 +286,7 @@ void CLabaInterpolaziyaGaussDlg::OnUpdateA()
 	CString str;
 	m_ControlA.GetWindowTextW(str);
 	A = _wtof(str);
-	InvalidateRect(rect);
-	UpdateWindow();
-	CLabaInterpolaziyaGaussDlg::OnPaint();
+	
 }
 
 
@@ -234,9 +296,7 @@ void CLabaInterpolaziyaGaussDlg::OnUpdateB()
 	CString str;
 	m_ControlB.GetWindowTextW(str);
 	B = _wtof(str);
-	InvalidateRect(rect);
-	UpdateWindow();
-	CLabaInterpolaziyaGaussDlg::OnPaint();
+	
 }
 
 
@@ -246,9 +306,7 @@ void CLabaInterpolaziyaGaussDlg::OnUpdateC()
 	CString str;
 	m_ControlC.GetWindowTextW(str);
 	C = _wtof(str);
-	InvalidateRect(rect);
-	UpdateWindow();
-	CLabaInterpolaziyaGaussDlg::OnPaint();
+	
 }
 
 
@@ -258,9 +316,7 @@ void CLabaInterpolaziyaGaussDlg::OnChangeD()
 	CString str;
 	m_ControlD.GetWindowTextW(str);
 	D = _wtof(str);
-	InvalidateRect(rect);
-	UpdateWindow();
-	CLabaInterpolaziyaGaussDlg::OnPaint();
+	
 }
 
 
@@ -270,9 +326,7 @@ void CLabaInterpolaziyaGaussDlg::OnUpdateAlpha()
 	CString str;
 	m_Alpha.GetWindowTextW(str);
 	alpha = _wtof(str);
-	InvalidateRect(rect);
-	UpdateWindow();
-	CLabaInterpolaziyaGaussDlg::OnPaint();
+	
 }
 
 
@@ -282,9 +336,7 @@ void CLabaInterpolaziyaGaussDlg::OnUpdateBeta()
 	CString str;
 	m_Beta.GetWindowTextW(str);
 	beta = _wtof(str);
-	InvalidateRect(rect);
-	UpdateWindow();
-	CLabaInterpolaziyaGaussDlg::OnPaint();
+	
 }
 
 
@@ -294,9 +346,7 @@ void CLabaInterpolaziyaGaussDlg::OnChangeGamma()
 	CString str;
 	m_Gamma.GetWindowTextW(str);
 	gamma = _wtof(str);
-	InvalidateRect(rect);
-	UpdateWindow();
-	CLabaInterpolaziyaGaussDlg::OnPaint();
+	
 }
 
 
@@ -306,9 +356,7 @@ void CLabaInterpolaziyaGaussDlg::OnUpdateN()
 	CString str;
 	m_N.GetWindowTextW(str);
 	n = _wtoi(str);
-	InvalidateRect(rect);
-	UpdateWindow();
-	CLabaInterpolaziyaGaussDlg::OnPaint();
+	
 }
 
 
@@ -316,6 +364,22 @@ void CLabaInterpolaziyaGaussDlg::OnClickedCheckfunc()
 {
 	// TODO: добавьте свой код обработчика уведомлений
 	m_Func = IsDlgButtonChecked(IDC_CHECKFUNC);
+	/*InvalidateRect(rect);
+	UpdateWindow();
+	CLabaInterpolaziyaGaussDlg::OnPaint();*/
+}
+
+
+void CLabaInterpolaziyaGaussDlg::OnBnClickedOk()
+{
+	// TODO: добавьте свой код обработчика уведомлений
+	CDialog::OnOK();
+}
+
+
+void CLabaInterpolaziyaGaussDlg::OnBnClickedCreate()
+{
+	// TODO: добавьте свой код обработчика уведомлений
 	InvalidateRect(rect);
 	UpdateWindow();
 	CLabaInterpolaziyaGaussDlg::OnPaint();

@@ -53,4 +53,6 @@ public:
 	CEdit m_N;
 	afx_msg void OnClickedCheckfunc();
 	BOOL m_Func;
+	afx_msg void OnBnClickedOk();
+	afx_msg void OnBnClickedCreate();
 };
