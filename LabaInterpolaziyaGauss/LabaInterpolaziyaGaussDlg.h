@@ -52,7 +52,17 @@ public:
 	afx_msg void OnUpdateN();
 	CEdit m_N;
 	afx_msg void OnClickedCheckfunc();
+
 	BOOL m_Func;
+	BOOL m_Polinom;
+	BOOL m_Fault;
+	BOOL m_FuncDerivative;
+	BOOL m_PolinomDerivative;
+
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCreate();
+	afx_msg void OnBnClickedCheckpolinom();
+	afx_msg void OnBnClickedCheckfault();
+	afx_msg void OnBnClickedCheckderivativefunk();
+	afx_msg void OnBnClickedCheckcheckderivativepolinom();
 };

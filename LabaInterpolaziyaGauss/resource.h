@@ -19,8 +19,12 @@
 #define IDC_N                           1008
 #define IDC_CHECK1                      1010
 #define IDC_CHECKFUNC                   1010
-#define IDC_BUTTON1                     1011
 #define IDC_CREATE                      1011
+#define IDC_CHECKPOLINOM                1012
+#define IDC_CHECKFAULT                  1013
+#define IDC_CHECKDERIVATIVEFUNK         1014
+#define IDC_CHECKCHECKDERIVATIVEPOLINOM 1015
+#define IDC_FUNCCOLOR                   1016
 
 // Next default values for new objects
 // 
@@ -28,7 +32,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        133
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1012
+#define _APS_NEXT_CONTROL_VALUE         1017
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
