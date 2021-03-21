@@ -57,6 +57,7 @@ double deltaY[200];//нужные дельты
 double RX1 = 50, RY1 = 100, RX2 = 650, RY2 = 600;
 CRect rect(RX1, RY1, RX2, RY2);
 double DeltasArray[200][200];
+double prirash;
 
 CLabaInterpolaziyaGaussDlg::CLabaInterpolaziyaGaussDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(IDD_LABAINTERPOLAZIYAGAUSS_DIALOG, pParent)
@@ -68,6 +69,8 @@ CLabaInterpolaziyaGaussDlg::CLabaInterpolaziyaGaussDlg(CWnd* pParent /*=nullptr*
 
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+
+	m_br.CreateSolidBrush(RGB(0, 0, 255));
 }
 
 void CLabaInterpolaziyaGaussDlg::DoDataExchange(CDataExchange* pDX)
@@ -86,9 +89,15 @@ void CLabaInterpolaziyaGaussDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECKFAULT, m_Fault);
 	DDX_Check(pDX, IDC_CHECKDERIVATIVEFUNK, m_FuncDerivative);
 	DDX_Check(pDX, IDC_CHECKCHECKDERIVATIVEPOLINOM, m_PolinomDerivative);
+	
+		DDX_Control(pDX, IDC_PRIRASHENIE, m_Prirash);
+
+	DDX_Control(pDX, IDC_sss, sss);
 }
 
 BEGIN_MESSAGE_MAP(CLabaInterpolaziyaGaussDlg, CDialog)
+	
+	ON_EN_CHANGE(IDC_PRIRASHENIE, &CLabaInterpolaziyaGaussDlg::OnEnChangePrirashenie)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
@@ -107,6 +116,7 @@ BEGIN_MESSAGE_MAP(CLabaInterpolaziyaGaussDlg, CDialog)
 	ON_BN_CLICKED(IDC_CHECKFUNC, &CLabaInterpolaziyaGaussDlg::OnClickedCheckfunc)
 	ON_BN_CLICKED(IDC_CREATE, &CLabaInterpolaziyaGaussDlg::OnBnClickedCreate)
 	ON_BN_CLICKED(IDOK, &CLabaInterpolaziyaGaussDlg::OnBnClickedOk)
+	ON_WM_CTLCOLOR()
 END_MESSAGE_MAP()
 
 
@@ -151,6 +161,7 @@ BOOL CLabaInterpolaziyaGaussDlg::OnInitDialog()
 	m_Beta.SetWindowTextW(L"1");
 	m_Gamma.SetWindowTextW(L"1");
 	m_N.SetWindowTextW(L"0");
+	m_Prirash.SetWindowTextW(L"0.01");
 
 	return TRUE;  // возврат значения TRUE, если фокус не передан элементу управления
 }
@@ -174,6 +185,7 @@ void CLabaInterpolaziyaGaussDlg::OnSysCommand(UINT nID, LPARAM lParam)
 
 
 double Function(double x) {
+	//return sin(x);
 	return alpha*sin(tan(beta*x))*sin(gamma*x);
 }
 
@@ -222,7 +234,6 @@ void fillingArray(){
 
 void CLabaInterpolaziyaGaussDlg::OnPaint()
 {
-	
 	fillingArray();
 	double x0 = RX1,
 		   y0 = Perer(A);
@@ -268,6 +279,7 @@ void CLabaInterpolaziyaGaussDlg::OnPaint()
 		}
 		ClientDC.LineTo(RX2, RY2 - ((RY2 - RY1) * ((Function(B) - C) / (D - C))));
 	}
+
 	if (m_Fault) {
 		double rez = 0;
 		m_NormalPen.DeleteObject();
@@ -277,7 +289,7 @@ void CLabaInterpolaziyaGaussDlg::OnPaint()
 		ClientDC.MoveTo(pStart);
 		for (double x = A; x <= B; x += (B - A) / (RX2 - RX1) * 0.1)
 		{
-
+			
 			pCur.x = (RX1 + ((RX2 - RX1) * ((x - A) / (B - A))));
 			rez = Polinom(x);
 			if (rez > 100000)
@@ -290,17 +302,40 @@ void CLabaInterpolaziyaGaussDlg::OnPaint()
 			ClientDC.LineTo(pCur);
 		}
 	}
+
 	if (m_FuncDerivative) {
 		m_NormalPen.DeleteObject();
-		m_NormalPen.CreatePen(PS_DEFAULT, 1, RGB(0, 0, 0));
+		m_NormalPen.CreatePen(PS_DEFAULT, 1, RGB(252, 15, 192));
 		ClientDC.SelectObject(&m_NormalPen);
 
+		ClientDC.MoveTo(pStart);
+		for (double x = A; x <= B; x += (B - A) / (RX2 - RX1) * 0.1)
+		{
+			pCur.x = (RX1 + ((RX2 - RX1) * ((x - A) / (B - A))));
+			pCur.y = RY2 - ((RY2 - RY1) * (((Function(x + prirash) - Function(x - prirash)) / (2 * prirash) - C) / (D - C)));
+			ClientDC.LineTo(pCur);
+		}
 	}
 	if (m_PolinomDerivative) {
 		m_NormalPen.DeleteObject();
 		m_NormalPen.CreatePen(PS_DEFAULT, 1, RGB(0, 0, 0));
 		ClientDC.SelectObject(&m_NormalPen);
-
+		double rez = 0;
+		pStart.y = RY2 - ((RY2 - RY1) * ((Function(A) - C) / (D - C)));
+		ClientDC.MoveTo(pStart);
+		for (double x = A; x < B; x += (B - A) / (RX2 - RX1) * 0.1)
+		{
+			
+			pCur.x = (RX1 + ((RX2 - RX1) * ((x - A) / (B - A))));
+			rez = (Polinom(x+prirash)-Polinom(x-prirash))/ (2 * prirash);
+			if (rez > 100000)
+				rez = 100000;
+			if (rez < -100000)
+				rez = -100000;
+			pCur.y = RY2 - ((RY2 - RY1) * ((rez - C) / (D - C)));
+			ClientDC.LineTo(pCur);
+		}
+		ClientDC.LineTo(RX2, RY2 - ((RY2 - RY1) * ((Function(B + prirash) - Function(B - prirash)) / (2 * prirash) - C) / (D - C)));
 	}
 
 
@@ -463,4 +498,24 @@ void CLabaInterpolaziyaGaussDlg::OnBnClickedCheckcheckderivativepolinom()
 {
 	// TODO: добавьте свой код обработчика уведомлений
 	m_PolinomDerivative = IsDlgButtonChecked(IDC_CHECKCHECKDERIVATIVEPOLINOM);
+}
+
+void CLabaInterpolaziyaGaussDlg::OnEnChangePrirashenie()
+{
+	// TODO:  Добавьте код элемента управления
+	CString str;
+	m_Prirash.GetWindowTextW(str);
+	prirash = _wtof(str);
+}
+
+
+HBRUSH CLabaInterpolaziyaGaussDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
+
+	// TODO:  Измените любые атрибуты DC
+	if (pWnd->GetDlgCtrlID() == IDC_sss)
+		return m_br;
+	// TODO:  Вернуть другое значение дескриптора кисти, если оно не определено по умолчанию
+	return hbr;
 }

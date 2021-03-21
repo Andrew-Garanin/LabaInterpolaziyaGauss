@@ -24,7 +24,9 @@
 #define IDC_CHECKFAULT                  1013
 #define IDC_CHECKDERIVATIVEFUNK         1014
 #define IDC_CHECKCHECKDERIVATIVEPOLINOM 1015
-#define IDC_FUNCCOLOR                   1016
+#define IDC_FCOLOR                      1017
+#define IDC_PRIRASHENIE                 1018
+#define IDC_sss                         1019
 
 // Next default values for new objects
 // 
@@ -32,7 +34,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        133
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1017
+#define _APS_NEXT_CONTROL_VALUE         1020
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -24,7 +24,7 @@ public:
 // Реализация
 protected:
 	HICON m_hIcon;
-
+	CBrush m_br;
 	// Созданные функции схемы сообщений
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
@@ -65,4 +65,8 @@ public:
 	afx_msg void OnBnClickedCheckfault();
 	afx_msg void OnBnClickedCheckderivativefunk();
 	afx_msg void OnBnClickedCheckcheckderivativepolinom();
+	afx_msg void OnEnChangePrirashenie();
+	CEdit m_Prirash;
+	CStatic sss;
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 };
