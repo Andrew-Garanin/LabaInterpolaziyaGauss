@@ -24,7 +24,11 @@ public:
 // Реализация
 protected:
 	HICON m_hIcon;
-	CBrush m_br;
+	CBrush m_brFunc;
+	CBrush m_brPol;
+	CBrush m_brFault;
+	CBrush m_brDerivativeFunc;
+	CBrush m_brDerivativePol;
 	// Созданные функции схемы сообщений
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);

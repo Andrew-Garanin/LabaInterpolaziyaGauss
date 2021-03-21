@@ -69,8 +69,11 @@ CLabaInterpolaziyaGaussDlg::CLabaInterpolaziyaGaussDlg(CWnd* pParent /*=nullptr*
 
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-
-	m_br.CreateSolidBrush(RGB(0, 0, 255));
+	m_brFunc.CreateSolidBrush(RGB(255, 0, 0));
+	m_brPol.CreateSolidBrush(RGB(0, 255, 0));
+	m_brFault.CreateSolidBrush(RGB(0, 0, 255));
+	m_brDerivativeFunc.CreateSolidBrush(RGB(252, 15, 192));
+	m_brDerivativePol.CreateSolidBrush(RGB(255, 165, 0));
 }
 
 void CLabaInterpolaziyaGaussDlg::DoDataExchange(CDataExchange* pDX)
@@ -91,8 +94,6 @@ void CLabaInterpolaziyaGaussDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECKCHECKDERIVATIVEPOLINOM, m_PolinomDerivative);
 	
 		DDX_Control(pDX, IDC_PRIRASHENIE, m_Prirash);
-
-	DDX_Control(pDX, IDC_sss, sss);
 }
 
 BEGIN_MESSAGE_MAP(CLabaInterpolaziyaGaussDlg, CDialog)
@@ -160,9 +161,10 @@ BOOL CLabaInterpolaziyaGaussDlg::OnInitDialog()
 	m_Alpha.SetWindowTextW(L"1");
 	m_Beta.SetWindowTextW(L"1");
 	m_Gamma.SetWindowTextW(L"1");
-	m_N.SetWindowTextW(L"0");
+	m_N.SetWindowTextW(L"15");
 	m_Prirash.SetWindowTextW(L"0.01");
 
+	this->SetWindowText(L"Интерполяция методом Гаусса. Гаранин Андрей ИВТ-31");
 	return TRUE;  // возврат значения TRUE, если фокус не передан элементу управления
 }
 
@@ -318,7 +320,7 @@ void CLabaInterpolaziyaGaussDlg::OnPaint()
 	}
 	if (m_PolinomDerivative) {
 		m_NormalPen.DeleteObject();
-		m_NormalPen.CreatePen(PS_DEFAULT, 1, RGB(0, 0, 0));
+		m_NormalPen.CreatePen(PS_DEFAULT, 1, RGB(255, 165, 0));
 		ClientDC.SelectObject(&m_NormalPen);
 		double rez = 0;
 		pStart.y = RY2 - ((RY2 - RY1) * ((Function(A) - C) / (D - C)));
@@ -514,8 +516,16 @@ HBRUSH CLabaInterpolaziyaGaussDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlCol
 	HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
 
 	// TODO:  Измените любые атрибуты DC
-	if (pWnd->GetDlgCtrlID() == IDC_sss)
-		return m_br;
+	if (pWnd->GetDlgCtrlID() == IDC_F)
+		return m_brFunc;
+	if (pWnd->GetDlgCtrlID() == IDC_P)
+		return m_brPol;
+	if (pWnd->GetDlgCtrlID() == IDC_RN)
+		return m_brFault;
+	if (pWnd->GetDlgCtrlID() == IDC_DF)
+		return m_brDerivativeFunc;
+	if (pWnd->GetDlgCtrlID() == IDC_DPN)
+		return m_brDerivativePol;
 	// TODO:  Вернуть другое значение дескриптора кисти, если оно не определено по умолчанию
 	return hbr;
 }
