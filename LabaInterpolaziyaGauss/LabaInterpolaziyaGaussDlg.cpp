@@ -12,7 +12,7 @@
 #define new DEBUG_NEW
 #endif
 
-
+	
 // Диалоговое окно CAboutDlg используется для описания сведений о приложении
 
 class CAboutDlg : public CDialogEx
@@ -316,7 +316,8 @@ void CLabaInterpolaziyaGaussDlg::OnPaint()
 		m_NormalPen.DeleteObject();
 		m_NormalPen.CreatePen(PS_DEFAULT, 1, RGB(252, 15, 192));
 		ClientDC.SelectObject(&m_NormalPen);
-
+		
+		pStart.y= RY2 - ((RY2 - RY1) * (((Function(A + prirash) - Function(A - prirash)) / (2 * prirash) - C) / (D - C)));
 		ClientDC.MoveTo(pStart);
 		for (double x = A; x <= B; x += (B - A) / (RX2 - RX1) * 0.1)
 		{
