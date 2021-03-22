@@ -292,6 +292,7 @@ void CLabaInterpolaziyaGaussDlg::OnPaint()
 	// Рисование функции-погрешности
 	if (m_Fault) {
 		double rez = 0;
+		double MaxY = y0, MaxX=x0, CurY=0;
 		m_NormalPen.DeleteObject();
 		m_NormalPen.CreatePen(PS_DEFAULT, 1, RGB(0, 0, 255));
 		ClientDC.SelectObject(&m_NormalPen);
@@ -306,9 +307,19 @@ void CLabaInterpolaziyaGaussDlg::OnPaint()
 			if (rez < -100000)
 				rez = -100000;
 
-			pCur.y = RY2 - ((RY2 - RY1) * ((abs(rez-Function(x)) - C) / (D - C)));
+			pCur.y = CurY = RY2 - ((RY2 - RY1) * ((abs(rez-Function(x)) - C) / (D - C)));
+			if (MaxY > CurY)
+			{
+				MaxY = CurY;
+				MaxX = pCur.x;
+			}
 			ClientDC.LineTo(pCur);
 		}
+		m_NormalPen.DeleteObject();
+		m_NormalPen.CreatePen(PS_DEFAULT, 1, RGB(0, 0,0));
+		ClientDC.SelectObject(&m_NormalPen);
+		ClientDC.MoveTo(MaxX, RY1);
+		ClientDC.LineTo(MaxX, RY2);
 	}
 
 	// Рисование производной функции
